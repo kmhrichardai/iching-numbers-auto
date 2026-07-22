@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>八星磁場分析 - Apple Pro Edition</title>
+    <style>
+        :root {
+            /* Apple UI 標準色票 */
+            --bg-color: #F2F2F7; /* iOS 系統層級背景 */
+            --card-bg: #FFFFFF;
+            --accent-color: #007AFF; /* Apple Blue */
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #C7C7CC;
+            --divider-color: rgba(60, 60, 67, 0.1);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 2px 10px rgba(0,0,0,0.03);
+            --shadow-lg: 0 -4px 24px rgba(0,0,0,0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh; 
+            height: 100dvh; /* 適應手機瀏覽器動態高度 */
+            overflow: hidden; /* 鎖死外層，由內部負責滑動 */
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* ========== 頂部固定區 (Header & Input) ========== */
+        .top-section {
+            flex-shrink: 0;
+            padding: 16px 16px 8px 16px;
+            background: var(--bg-color);
+            z-index: 10;
+        }
+
+        .header { text-align: center; margin-bottom: 16px; }
+        .header h1 { font-size: 24px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
+        .header p { color: var(--text-secondary); margin-top: 4px; font-size: 13px; font-weight: 500; margin-bottom: 0; }
+
+        .input-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            border: none;
+            background: rgba(118, 118, 128, 0.08); /* iOS 原生輸入框底色 */
+            padding: 16px 40px 16px 16px; 
+            font-size: 22px;
+            border-radius: 14px;
+            outline: none;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: background 0.2s;
+        }
+        input:focus { background: rgba(118, 118, 128, 0.12); }
+        input::placeholder { color: #A1A1A6; font-weight: 500; }
+
+        /* 清除按鈕 */
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: var(--text-tertiary);
+            color: #FFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none; 
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .clear-btn:active { background: #999; }
+
+        /* ========== 中間滑動區 (網格與統計) ========== */
+        .scroll-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 8px 16px;
+            scrollbar-width: none;
+        }
+        .scroll-area::-webkit-scrollbar { display: none; }
+
+        /* 由左至右九宮格 */
+        #resultList {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .result-item {
+            background: var(--card-bg);
+            padding: 16px 8px;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+        }
+
+        .num-tag { font-size: 22px; font-weight: 700; color: var(--accent-color); line-height: 1.1; }
+        .num-modifier { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; }
+        
+        .star-name-wrapper { margin-top: 10px; margin-bottom: 8px; }
+        .star-name { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
+        .star-level { font-size: 11px; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
+        
+        .star-type { font-size: 11px; font-weight: 600; color: #FFF; padding: 2px 10px; border-radius: 10px; }
+
+        /* iOS 原生風格統計卡片 */
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: none;
+            margin-bottom: 20px;
+        }
+        .stats-header {
+            padding: 14px 16px 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stats-list { padding: 0 16px; }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            font-size: 15px;
+        }
+        .stats-divider { height: 1px; background: var(--divider-color); width: 100%; }
+        .stats-label { color: var(--text-primary); font-weight: 500; }
+        .stats-value { color: var(--text-secondary); font-weight: 500; text-align: right; }
+
+        /* ========== 底部操作區 (Footer) ========== */
+        .footer-action {
+            flex-shrink: 0; /* 鎖死高度，不被壓縮 */
+            padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) 16px;
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--divider-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: var(--shadow-lg);
+            z-index: 10;
+        }
+
+        /* iOS 原生 Segmented Control */
+        .segment-control {
+            display: flex;
+            background: rgba(118, 118, 128, 0.12);
+            border-radius: 9px;
+            padding: 2px;
+            position: relative;
+        }
+        .segment-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 7px 0;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            position: relative;
+            z-index: 2;
+        }
+        .segment-btn.active {
+            background: #FFFFFF;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+        }
+
+        /* 預覽文字區 (自適應高度，不滾動) */
+        .preview-text {
+            font-size: 13px; 
+            color: #3A3A3C; 
+            background: rgba(118, 118, 128, 0.08); 
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 500; 
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            text-align: center;
+            height: auto; 
+            transition: all 0.2s ease;
+        }
+        /* 隱藏無文字時的框框 */
+        .preview-text:empty { display: none; }
+
+        .copy-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .copy-btn:active { transform: scale(0.97); background: #0062CC; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="top-section">
+        <div class="header">
+            <h1>數字磁場分析</h1>
+            <p>Professional Analytics Pro</p>
+        </div>
+        <div class="input-card">
+            <div class="input-wrapper">
+                <input type="text" id="numInput" placeholder="輸入號碼 (如 11294757)" maxlength="20" value="">
+                <div class="clear-btn" id="clearBtn" onclick="clearInput()">✕</div>
+            </div>
+            </div>
+    </div>
+
+    <div class="scroll-area">
+        <div id="resultList"></div>
+        
+        <div id="statsArea" class="stats-card">
+            <div class="stats-header">📊 整體磁場分析</div>
+            <div class="stats-list">
+                <div class="stats-row">
+                    <span class="stats-label">吉凶比例</span>
+                    <span class="stats-value" id="statRatio">吉 0% / 凶 0%</span>
+                </div>
+                <div class="stats-divider"></div>
+                <div class="stats-row">
+                    <span class="stats-label">能量流向</span>
+                    <span class="stats-value" id="statFlow">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-action" id="copyArea">
+        <div class="segment-control">
+            <button class="segment-btn active" id="btn-ai" onclick="setCopyMode('ai')">AI 專業</button>
+            <button class="segment-btn" id="btn-client" onclick="setCopyMode('client')">客戶簡報</button>
+            <button class="segment-btn" id="btn-numbers" onclick="setCopyMode('numbers')">純數字</button>
+        </div>
+        <div id="formattedText" class="preview-text"></div>
+        <button class="copy-btn" onclick="copyResult()">一鍵複製結果</button>
+    </div>
+</div>
+
+<script>
+    // 磁場資料庫
+    const stars = {
+        "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, color: "#FF2D55", type: "吉" },
+        "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, color: "#34C759", type: "吉" },
+        "延年": { levels: { "1級": ["19","91"], "2級": ["78","87"], "3級": ["34","43"], "4級": ["26","62"] }, color: "#FF9500", type: "吉" },
+        "伏位": { levels: { "1級": ["11","22"], "2級": ["88","99"], "3級": ["66","77"], "4級": ["33","44"] }, color: "#32ADE6", type: "吉" },
+        "絕命": { levels: { "1級": ["12","21"], "2級": ["69","96"], "3級": ["48","84"], "4級": ["37","73"] }, color: "#1C1C1E", type: "凶" },
+        "五鬼": { levels: { "1級": ["18","81"], "2級": ["79","97"], "3級": ["36","63"], "4級": ["24","42"] }, color: "#5856D6", type: "凶" },
+        "六煞": { levels: { "1級": ["16","61"], "2級": ["47","74"], "3級": ["38","83"], "4級": ["29","92"] }, color: "#AF52DE", type: "凶" },
+        "禍害": { levels: { "1級": ["17","71"], "2級": ["89","98"], "3級": ["46","64"], "4級": ["23","32"] }, color: "#FFCC00", type: "凶" }
+    };
+
+    const input = document.getElementById('numInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const list = document.getElementById('resultList');
+    const statsArea = document.getElementById('statsArea');
+    const formattedDisplay = document.getElementById('formattedText');
+    
+    // 狀態管理
+    let currentMode = 'ai'; 
+    let currentCopyTexts = { ai: '', client: '', numbers: '' };
+
+    // 監聽輸入事件
+    input.addEventListener('input', () => {
+        clearBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
+        updateAnalysis();
+    });
+
+    // 清除按鈕功能
+    function clearInput() {
+        input.value = '';
+        clearBtn.style.display = 'none';
+        updateAnalysis();
+        input.focus();
+    }
+
+    /* === 模式切換邏輯 === */
+    function setCopyMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-ai').classList.remove('active');
+        document.getElementById('btn-client').classList.remove('active');
+        document.getElementById('btn-numbers').classList.remove('active');
+        document.getElementById(`btn-${mode}`).classList.add('active');
+        formattedDisplay.innerText = currentCopyTexts[mode] || '';
+    }
+
+    /* === 核心演算法 (保留所有功能) === */
+    function updateAnalysis() {
+        const val = input.value.replace(/\D/g, '');
+
+        if (val.length < 2) { 
+            list.innerHTML = ""; 
+            formattedDisplay.innerText = "";
+            statsArea.style.display = "none";
+            currentCopyTexts = { ai: '', client: '', numbers: '' };
+            return; 
+        }
+
+        let pairs = [];
+        let i = 0;
+        
+        // 滑動窗口 (處理連續 0/5)
+        while (i < val.length - 1) {
+            let j = i;
+            let normalCount = 0;
+            let chunk = "";
+            
+            while (j < val.length && normalCount < 2) {
+                if (val[j] !== '0' && val[j] !== '5') normalCount++;
+                chunk += val[j];
+                if (normalCount === 2) break;
+                j++;
+            }
+            
+            if (normalCount === 2) {
+                pairs.push(chunk);
+                i = j;
+            } else if (normalCount === 1 && j === val.length) {
+                if (pairs.length > 0) {
+                    let lastPair = pairs.pop();
+                    pairs.push(lastPair.substring(0, lastPair.length - 1) + chunk);
+                } else {
+                    pairs.push(chunk);
+                }
+                break;
+            } else {
+                break;
+            }
+        }
+
+        renderList(pairs);
+        generateDataAndStats(val, pairs);
+    }
+
+    function getStarDetail(p) {
+        let clean = p.replace(/[05]/g, '');
+        if (clean.length === 0) return null;
+        if (clean.length === 1) clean = clean + clean; 
+        if (clean.length > 2) clean = clean[0] + clean[clean.length - 1];
+
+        for (let s in stars) {
+            for (let lvl in stars[s].levels) {
+                if (stars[s].levels[lvl].includes(clean)) {
+                    return { name: s, coreNum: clean, level: lvl, color: stars[s].color, type: stars[s].type };
+                }
+            }
+        }
+        return null;
+    }
+
+    function getSmartModifier(p) {
+        let zeroCount = (p.match(/0/g) || []).length;
+        let fiveCount = (p.match(/5/g) || []).length;
+        let parts = [];
+        
+        if (fiveCount === 1) parts.push("5顯");
+        else if (fiveCount === 2) parts.push("雙5顯");
+        else if (fiveCount > 2) parts.push(fiveCount + "重5顯");
+        
+        if (zeroCount === 1) parts.push("0隱");
+        else if (zeroCount === 2) parts.push("雙0隱");
+        else if (zeroCount > 2) parts.push(zeroCount + "重0隱");
+        
+        return parts.length > 0 ? `(${parts.join('')})` : "";
+    }
+
+    // 渲染網格小卡片
+    function renderList(pairs) {
+        list.innerHTML = pairs.map(p => {
+            const star = getStarDetail(p);
+            const modifier = getSmartModifier(p);
+            
+            let tagNote = modifier ? `<div class="num-modifier">${modifier}</div>` : "";
+            const lvlText = star ? `<div class="star-level">${star.level}</div>` : '';
+
+            return `
+                <div class="result-item">
+                    <div>
+                        <div class="num-tag">${p}</div>
+                        ${tagNote}
+                    </div>
+                    <div class="star-name-wrapper">
+                        <div class="star-name">${star ? star.name : '未知'}</div>
+                        ${lvlText}
+                    </div>
+                    <div class="star-type" style="background:${star ? star.color : '#CCC'}">${star ? star.type : '?'}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 生成三種複製模式資料與統計卡片
+    function generateDataAndStats(rawNum, pairs) {
+        let validStars = [];
+        let luckyCount = 0;
+        let unluckyCount = 0;
+
+        let aiItems = [];
+        let clientItems = [];
+        let numItems = [];
+
+        pairs.forEach(p => {
+            const star = getStarDetail(p);
+            if (star) {
+                validStars.push(star);
+                if (star.type === "吉") luckyCount++;
+                else if (star.type === "凶") unluckyCount++;
+            }
+
+            const starName = star ? star.name : "未知";
+            const coreNum = star ? star.coreNum : p;
+            const level = star ? `-${star.level}` : '';
+            const modifier = getSmartModifier(p);
+
+            aiItems.push(`${starName}${coreNum}${level}${modifier ? ' ' + modifier : ''} [${p}]`);
+            clientItems.push(`${starName}(${star ? star.type : '?'})`);
+            numItems.push(p);
+        });
+
+        let total = luckyCount + unluckyCount;
+        let luckyPct = total > 0 ? Math.round((luckyCount / total) * 100) : 0;
+        let unluckyPct = total > 0 ? Math.round((unluckyCount / total) * 100) : 0;
+        let ratioText = total > 0 ? `吉 ${luckyPct}% / 凶 ${unluckyPct}%` : "無";
+
+        let flowText = "無";
+        if (validStars.length >= 2) {
+            let first = validStars[0];
+            let last = validStars[validStars.length - 1];
+            flowText = `${first.type}轉${last.type}（${first.name} ➔ ${last.name}）`;
+        } else if (validStars.length === 1) {
+            flowText = `單一磁場（${validStars[0].name}）`;
+        }
+
+        let statsString = `📊 統計：${ratioText}\n🔄 流向：${flowText}`;
+        
+        // 更新三種模式文字
+        currentCopyTexts = {
+            ai: `${rawNum} ➔ ${aiItems.join(' + ')}\n\n${statsString}`,
+            client: `${rawNum} ➔ ${clientItems.join(' ➔ ')}\n\n${statsString}`,
+            numbers: numItems.join(', ')
+        };
+
+        // 更新統計面板 UI
+        if (total > 0) {
+            statsArea.style.display = "block";
+            document.getElementById('statRatio').innerText = ratioText;
+            document.getElementById('statFlow').innerText = flowText;
+        } else {
+            statsArea.style.display = "none";
+        }
+
+        // 刷新當前顯示文字
+        formattedDisplay.innerText = currentCopyTexts[currentMode];
+    }
+
+    function copyResult() {
+        const text = formattedDisplay.innerText;
+        if (!text) {
+            alert('請先輸入有效號碼！');
+            return;
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已成功複製到剪貼簿！');
+            });
+        } else {
+            let textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('已成功複製到剪貼簿！');
+            } catch (err) {
+                alert('複製失敗，請手動複製文字。');
+            }
+            textArea.remove();
+        }
+    }
+</script>
+</body>
+</html>
