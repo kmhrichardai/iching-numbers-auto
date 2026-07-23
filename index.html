@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>八星磁場分析 - Apple Pro Edition</title>
     <style>
-        /* === 1. 定義顏色變數 (預設 Light Mode) === */
+        /* === 定義顏色變數 (預設 Light Mode) === */
         :root {
             --bg-color: #F2F2F7; 
             --card-bg: #FFFFFF;
@@ -16,13 +16,15 @@
             --divider-color: rgba(60, 60, 67, 0.1);
             --input-bg: rgba(118, 118, 128, 0.08);
             --picker-bg: rgba(118, 118, 128, 0.12);
-            --preview-bg: rgba(118, 118, 128, 0.08);
+            --preview-bg: rgba(255, 255, 255, 0.5); 
             --footer-bg: rgba(242, 242, 247, 0.85);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
             --shadow-lg: 0 -4px 20px rgba(0,0,0,0.06);
+            --shadow-inset: inset 0 1px 4px rgba(0,0,0,0.06);
+            --hint-bg: rgba(0, 122, 255, 0.1); /* 轉換提示背景 */
         }
 
-        /* === 2. 深色模式變數 (手動切換) === */
+        /* === 深色模式變數 (手動切換) === */
         [data-theme="dark"] {
             --bg-color: #000000;
             --card-bg: #1C1C1E;
@@ -32,10 +34,12 @@
             --divider-color: rgba(84, 84, 88, 0.65);
             --input-bg: rgba(118, 118, 128, 0.24);
             --picker-bg: rgba(118, 118, 128, 0.24);
-            --preview-bg: rgba(118, 118, 128, 0.18);
+            --preview-bg: rgba(0, 0, 0, 0.3); 
             --footer-bg: rgba(0, 0, 0, 0.85);
             --shadow-sm: 0 1px 4px rgba(0,0,0,0.2);
             --shadow-lg: 0 -4px 24px rgba(0,0,0,0.4);
+            --shadow-inset: inset 0 1px 5px rgba(0,0,0,0.4);
+            --hint-bg: rgba(10, 132, 255, 0.15); /* 轉換提示暗黑背景 */
         }
 
         body {
@@ -93,7 +97,7 @@
         .header { 
             display: flex; 
             align-items: baseline; 
-            justify-content: flex-start; 
+            justify-content: center; /* 標題置中 */
             gap: 8px;
             margin-bottom: 12px; 
             margin-top: 4px;
@@ -158,6 +162,19 @@
         }
         .scroll-area::-webkit-scrollbar { display: none; }
 
+        /* 英文字母轉換提示 */
+        .conversion-hint {
+            font-size: 12px;
+            color: var(--accent-color);
+            background: var(--hint-bg);
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: none; /* 預設隱藏，有英文字母才顯示 */
+        }
+
         /* 迷你卡片排版 */
         #resultList {
             display: grid;
@@ -210,35 +227,46 @@
         /* ========== 底部操作區 (Footer) ========== */
         .footer-action {
             flex-shrink: 0; 
-            padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
+            padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) 16px; 
             background: var(--footer-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--divider-color);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px; 
             box-shadow: var(--shadow-lg);
             z-index: 10;
         }
 
-        /* 下拉選單樣式 (取代原本的三個按鈕) */
+        /* 橫向排列：下拉選單 + 複製按鈕 */
+        .action-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            align-items: stretch; 
+            height: 44px; 
+        }
+
+        /* 下拉選單樣式 */
         .select-wrapper {
             position: relative;
-            width: 100%;
+            flex: 1; 
+            min-width: 0;
         }
         .mode-select {
             width: 100%;
+            height: 100%;
             background: var(--picker-bg);
             color: var(--text-primary);
             border: none;
-            padding: 10px 14px;
+            padding: 0 30px 0 14px;
             border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
-            appearance: none; /* 隱藏原生箭頭 */
+            appearance: none;
             -webkit-appearance: none;
-            text-align: center;
+            text-align: left;
             outline: none;
             cursor: pointer;
         }
@@ -250,38 +278,44 @@
             transform: translateY(-50%);
             font-size: 10px;
             color: var(--text-secondary);
-            pointer-events: none; /* 確保點擊能穿透觸發 select */
+            pointer-events: none;
         }
 
-        .preview-text {
-            font-size: 12px; 
-            color: var(--text-primary); 
-            background: var(--preview-bg); 
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 500; 
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-all;
-            text-align: center;
-            max-height: 80px; 
-            overflow-y: auto; 
-        }
-        .preview-text:empty { display: none; }
-
+        /* 縮小版複製按鈕 */
         .copy-btn {
             background: var(--accent-color);
             color: white;
             border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
+            width: 90px; 
+            flex-shrink: 0;
             transition: transform 0.1s, background-color 0.2s;
         }
-        .copy-btn:active { transform: scale(0.97); background: #0062CC; }
+        .copy-btn:active { transform: scale(0.95); background: #0062CC; }
+
+        /* 高顏值代碼預覽框 */
+        .preview-box {
+            background: var(--preview-bg);
+            border: 1px solid var(--divider-color);
+            border-radius: 8px;
+            padding: 8px 10px;
+            max-height: 54px; 
+            overflow-y: auto; 
+            box-shadow: var(--shadow-inset); 
+            display: none; 
+        }
+        .preview-text {
+            font-size: 11px; 
+            color: var(--text-primary); 
+            font-weight: 500; 
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-all;
+            text-align: left; 
+        }
 
         /* ========== iOS 風格 Toast 提示框 ========== */
         .toast-message {
@@ -323,13 +357,17 @@
         </div>
         <div class="input-card">
             <div class="input-wrapper">
-                <input type="text" id="numInput" placeholder="輸入號碼 (如 94134741)" maxlength="20" value="">
+                <!-- 更新提示字，暗示可輸入英文或混合 -->
+                <input type="text" id="numInput" placeholder="支援電話號碼/英文名/車牌 (如 MA34138658)" maxlength="20" value="">
                 <div class="clear-btn" id="clearBtn" onclick="clearInput()">✕</div>
             </div>
         </div>
     </div>
 
     <div class="scroll-area">
+        <!-- 英文轉換提示區域 -->
+        <div id="conversionHint" class="conversion-hint"></div>
+
         <div id="resultList"></div>
         
         <!-- 單行統計卡片 -->
@@ -340,22 +378,27 @@
     </div>
 
     <div class="footer-action" id="copyArea">
-        <!-- 向下滑動的選擇器 (下拉選單) -->
-        <div class="select-wrapper">
-            <select id="modeSelect" class="mode-select" onchange="setCopyMode(this.value)">
-                <option value="ai">輸出模式：AI 專業</option>
-                <option value="client">輸出模式：客戶簡報</option>
-                <option value="numbers">輸出模式：純數字</option>
-            </select>
+        <!-- 橫向排列：選單與按鈕 -->
+        <div class="action-row">
+            <div class="select-wrapper">
+                <select id="modeSelect" class="mode-select" onchange="setCopyMode(this.value)">
+                    <option value="ai">模式：AI 專業</option>
+                    <option value="client">模式：客戶簡報</option>
+                    <option value="numbers">模式：純數字</option>
+                </select>
+            </div>
+            <button class="copy-btn" onclick="copyResult()">複製</button>
         </div>
         
-        <div id="formattedText" class="preview-text"></div>
-        <button class="copy-btn" onclick="copyResult()">一鍵複製結果</button>
+        <!-- 隱藏式高顏值預覽框 -->
+        <div id="previewContainer" class="preview-box">
+            <div id="formattedText" class="preview-text"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // 磁場資料庫 (絕命顏色改為隨主題自適應的 var(--text-primary) 以利深淺色辨識)
+    // 磁場資料庫
     const stars = {
         "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, color: "#FF2D55", type: "吉" },
         "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, color: "#34C759", type: "吉" },
@@ -367,18 +410,25 @@
         "禍害": { levels: { "1級": ["17","71"], "2級": ["89","98"], "3級": ["46","64"], "4級": ["23","32"] }, color: "#FFCC00", type: "凶" }
     };
 
+    // 畢達哥拉斯 1-9 英文字母對應表
+    const letterMap = {
+        'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9,
+        'J':1, 'K':2, 'L':3, 'M':4, 'N':5, 'O':6, 'P':7, 'Q':8, 'R':9,
+        'S':1, 'T':2, 'U':3, 'V':4, 'W':5, 'X':6, 'Y':7, 'Z':8
+    };
+
     const input = document.getElementById('numInput');
     const clearBtn = document.getElementById('clearBtn');
     const list = document.getElementById('resultList');
     const statsArea = document.getElementById('statsArea');
+    const previewContainer = document.getElementById('previewContainer');
     const formattedDisplay = document.getElementById('formattedText');
-    const modeSelect = document.getElementById('modeSelect');
+    const conversionHint = document.getElementById('conversionHint');
     
-    // 狀態管理
     let currentMode = 'ai'; 
     let currentCopyTexts = { ai: '', client: '', numbers: '' };
 
-    // 主題切換邏輯 (預設 Light)
+    // 主題切換
     function toggleTheme() {
         triggerHaptic();
         const html = document.documentElement;
@@ -387,10 +437,10 @@
         
         if (currentTheme === 'dark') {
             html.removeAttribute('data-theme');
-            btn.innerHTML = '🌙'; // 切回亮色，顯示月亮暗示切換深色
+            btn.innerHTML = '🌙'; 
         } else {
             html.setAttribute('data-theme', 'dark');
-            btn.innerHTML = '☀️'; // 切換深色，顯示太陽暗示切回亮色
+            btn.innerHTML = '☀️'; 
         }
     }
 
@@ -400,7 +450,6 @@
         updateAnalysis();
     });
 
-    // 清除按鈕功能
     function clearInput() {
         triggerHaptic();
         input.value = '';
@@ -409,35 +458,53 @@
         input.focus();
     }
 
-    // 觸覺回饋
     function triggerHaptic() {
         if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(10);
         }
     }
 
-    /* === 模式切換邏輯 (透過下拉選單觸發) === */
     function setCopyMode(mode) {
         triggerHaptic();
         currentMode = mode;
         formattedDisplay.innerText = currentCopyTexts[mode] || '';
     }
 
-    /* === 核心演算法 (100%保留) === */
+    /* === 核心演算法 + 英文轉換支援 === */
     function updateAnalysis() {
-        const val = input.value.replace(/\D/g, '');
+        // 將輸入全轉大寫，並剔除英文與數字以外的符號
+        const rawStr = input.value.toUpperCase();
+        const cleanedRaw = rawStr.replace(/[^A-Z0-9]/g, '');
 
-        if (val.length < 2) { 
+        if (cleanedRaw.length < 2) { 
             list.innerHTML = ""; 
             formattedDisplay.innerText = "";
             statsArea.style.display = "none";
+            previewContainer.style.display = "none"; 
+            conversionHint.style.display = "none"; // 隱藏轉換提示
             currentCopyTexts = { ai: '', client: '', numbers: '' };
             return; 
+        }
+
+        // 轉換邏輯：字母轉數字，數字保留
+        const convertedVal = cleanedRaw.split('').map(char => {
+            if (/[A-Z]/.test(char)) return letterMap[char];
+            return char;
+        }).join('');
+
+        // 若有包含英文被轉換，顯示提示 UI
+        if (cleanedRaw !== convertedVal) {
+            conversionHint.innerText = `💡 字母自動轉換：${cleanedRaw} ➔ ${convertedVal}`;
+            conversionHint.style.display = "block";
+        } else {
+            conversionHint.style.display = "none";
         }
 
         let pairs = [];
         let i = 0;
         
+        // 滑動視窗拆解 (針對轉換後的數字 val)
+        const val = convertedVal;
         while (i < val.length - 1) {
             let j = i;
             let normalCount = 0;
@@ -467,7 +534,8 @@
         }
 
         renderList(pairs);
-        generateDataAndStats(val, pairs);
+        // 將原始輸入(cleanedRaw)與轉換後數字(convertedVal)一併傳入處理
+        generateDataAndStats(cleanedRaw, convertedVal, pairs);
     }
 
     function getStarDetail(p) {
@@ -502,7 +570,6 @@
         return parts.length > 0 ? `(${parts.join('')})` : "";
     }
 
-    // 渲染超迷你網格小卡 (Left Border 顏色指示，縮減卡片高度)
     function renderList(pairs) {
         list.innerHTML = pairs.map(p => {
             const star = getStarDetail(p);
@@ -524,8 +591,7 @@
         }).join('');
     }
 
-    // 生成資料與單行統計卡片
-    function generateDataAndStats(rawNum, pairs) {
+    function generateDataAndStats(originalStr, convertedStr, pairs) {
         let validStars = [];
         let luckyCount = 0;
         let unluckyCount = 0;
@@ -568,21 +634,25 @@
 
         let statsString = `📊 統計：${ratioText}\n🔄 流向：${flowText}`;
         
+        // 若有英文字母轉換，則預覽時顯示「原始 ➔ 轉換後」，否則僅顯示數字
+        let headerDisplay = (originalStr !== convertedStr) ? `${originalStr} ➔ ${convertedStr}` : originalStr;
+
         currentCopyTexts = {
-            ai: `${rawNum} ➔ ${aiItems.join(' + ')}\n\n${statsString}`,
-            client: `${rawNum} ➔ ${clientItems.join(' ➔ ')}\n\n${statsString}`,
+            ai: `${headerDisplay} ➔ ${aiItems.join(' + ')}\n\n${statsString}`,
+            client: `${headerDisplay} ➔ ${clientItems.join(' ➔ ')}\n\n${statsString}`,
             numbers: numItems.join(', ')
         };
 
         if (total > 0) {
             statsArea.style.display = "flex";
+            previewContainer.style.display = "block"; 
             document.getElementById('statRatio').innerText = `📊 ${ratioText}`;
             document.getElementById('statFlow').innerText = `🔄 ${flowText}`;
         } else {
             statsArea.style.display = "none";
+            previewContainer.style.display = "none"; 
         }
 
-        // 刷新目前選擇模式的預覽文字
         formattedDisplay.innerText = currentCopyTexts[currentMode];
     }
 
