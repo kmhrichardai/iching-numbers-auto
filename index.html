@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>八星磁場分析 - Apple Pro Edition</title>
     <style>
+        /* === 1. 定義顏色變數 (預設 Light Mode) === */
         :root {
-            /* Apple UI 標準色票 (亮色預設) */
             --bg-color: #F2F2F7; 
             --card-bg: #FFFFFF;
             --accent-color: #007AFF; 
@@ -14,22 +14,28 @@
             --text-secondary: #8E8E93;
             --text-tertiary: #C7C7CC;
             --divider-color: rgba(60, 60, 67, 0.1);
+            --input-bg: rgba(118, 118, 128, 0.08);
+            --picker-bg: rgba(118, 118, 128, 0.12);
+            --preview-bg: rgba(118, 118, 128, 0.08);
+            --footer-bg: rgba(242, 242, 247, 0.85);
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
             --shadow-lg: 0 -4px 20px rgba(0,0,0,0.06);
         }
 
-        /* 系統級暗黑模式支援 */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #000000;
-                --card-bg: #1C1C1E;
-                --text-primary: #FFFFFF;
-                --text-secondary: #8E8E93;
-                --text-tertiary: #48484A;
-                --divider-color: rgba(84, 84, 88, 0.65);
-                --shadow-sm: 0 1px 4px rgba(0,0,0,0.2);
-                --shadow-lg: 0 -4px 24px rgba(0,0,0,0.4);
-            }
+        /* === 2. 深色模式變數 (手動切換) === */
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --card-bg: #1C1C1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+            --text-tertiary: #48484A;
+            --divider-color: rgba(84, 84, 88, 0.65);
+            --input-bg: rgba(118, 118, 128, 0.24);
+            --picker-bg: rgba(118, 118, 128, 0.24);
+            --preview-bg: rgba(118, 118, 128, 0.18);
+            --footer-bg: rgba(0, 0, 0, 0.85);
+            --shadow-sm: 0 1px 4px rgba(0,0,0,0.2);
+            --shadow-lg: 0 -4px 24px rgba(0,0,0,0.4);
         }
 
         body {
@@ -44,6 +50,7 @@
             overflow: hidden; 
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .app-container {
@@ -52,12 +59,33 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            position: relative;
         }
 
-        /* ========== 頂部固定區 (Header & Input) - 優化：極致扁平化 ========== */
+        /* 主題切換按鈕 */
+        .theme-toggle {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--input-bg);
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 20;
+            transition: transform 0.2s;
+        }
+        .theme-toggle:active { transform: scale(0.9); }
+
+        /* ========== 頂部固定區 (Header & Input) ========== */
         .top-section {
             flex-shrink: 0;
-            padding: 12px 16px 8px 16px;
+            padding: 16px 16px 8px 16px;
             background: var(--bg-color);
             z-index: 10;
         }
@@ -65,17 +93,18 @@
         .header { 
             display: flex; 
             align-items: baseline; 
-            justify-content: center; 
+            justify-content: flex-start; 
             gap: 8px;
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
+            margin-top: 4px;
         }
-        .header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
+        .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
         .header p { color: var(--text-secondary); font-size: 11px; font-weight: 500; margin: 0; }
 
         .input-card {
             background: var(--card-bg);
-            padding: 10px;
-            border-radius: 16px;
+            padding: 8px;
+            border-radius: 14px;
             box-shadow: var(--shadow-sm);
         }
 
@@ -88,20 +117,17 @@
         input {
             width: 100%;
             border: none;
-            background: rgba(118, 118, 128, 0.08); 
+            background: var(--input-bg);
             padding: 12px 36px 12px 12px; 
-            font-size: 20px;
-            border-radius: 12px;
+            font-size: 22px;
+            border-radius: 10px;
             outline: none;
             text-align: center;
             font-weight: 600;
             color: var(--text-primary);
             transition: background 0.2s;
         }
-        @media (prefers-color-scheme: dark) {
-            input { background: rgba(118, 118, 128, 0.24); }
-        }
-        input:focus { background: rgba(118, 118, 128, 0.12); }
+        input:focus { filter: brightness(0.95); }
         input::placeholder { color: #A1A1A6; font-weight: 500; }
 
         /* 清除按鈕 */
@@ -132,7 +158,7 @@
         }
         .scroll-area::-webkit-scrollbar { display: none; }
 
-        /* 由左至右九宮格 - 優化：間距縮小，卡片變薄 */
+        /* 迷你卡片排版 */
         #resultList {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -142,60 +168,50 @@
 
         .result-item {
             background: var(--card-bg);
-            padding: 10px 4px;
-            border-radius: 14px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-sm);
-            text-align: center;
+            gap: 2px;
         }
 
-        .num-tag { font-size: 18px; font-weight: 700; color: var(--accent-color); line-height: 1.1; }
-        .num-modifier { font-size: 10px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
-        
-        .star-name-wrapper { margin-top: 6px; margin-bottom: 6px; }
-        .star-name { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
-        .star-level { font-size: 10px; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
-        
-        .star-type { font-size: 10px; font-weight: 600; color: #FFF; padding: 2px 8px; border-radius: 8px; }
-
-        /* 統計卡片 - 優化：留白縮減 */
-        .stats-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            display: none;
-            margin-bottom: 16px;
-        }
-        .stats-header {
-            padding: 10px 12px 6px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .stats-list { padding: 0 12px; }
-        .stats-row {
+        .card-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            font-size: 14px;
+            align-items: baseline;
+            width: 100%;
         }
-        .stats-divider { height: 1px; background: var(--divider-color); width: 100%; }
-        .stats-label { color: var(--text-primary); font-weight: 500; }
-        .stats-value { color: var(--text-secondary); font-weight: 500; text-align: right; }
 
-        /* ========== 底部操作區 (Footer) - 優化：固定預覽區最大高度 ========== */
+        .num-tag { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .num-modifier { font-size: 10px; color: var(--accent-color); font-weight: 600; margin-left: 4px; }
+        .star-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: baseline; gap: 4px; }
+        .star-level { font-size: 10px; font-weight: 500; opacity: 0.8; }
+        .star-type { font-size: 11px; font-weight: 700; }
+
+        /* 單行統計卡片 */
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            padding: 12px 14px;
+            display: none;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .stats-text-primary { color: var(--text-primary); }
+        .stats-text-secondary { color: var(--text-secondary); }
+
+        /* ========== 底部操作區 (Footer) ========== */
         .footer-action {
             flex-shrink: 0; 
             padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
-            background: rgba(242, 242, 247, 0.85);
+            background: var(--footer-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--divider-color);
@@ -205,56 +221,51 @@
             box-shadow: var(--shadow-lg);
             z-index: 10;
         }
-        @media (prefers-color-scheme: dark) {
-            .footer-action { background: rgba(0, 0, 0, 0.85); }
-        }
 
-        .segment-control {
-            display: flex;
-            background: rgba(118, 118, 128, 0.12);
-            border-radius: 9px;
-            padding: 2px;
+        /* 下拉選單樣式 (取代原本的三個按鈕) */
+        .select-wrapper {
             position: relative;
+            width: 100%;
         }
-        @media (prefers-color-scheme: dark) {
-            .segment-control { background: rgba(118, 118, 128, 0.24); }
-        }
-        .segment-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 6px 0;
-            font-size: 13px;
-            font-weight: 500;
+        .mode-select {
+            width: 100%;
+            background: var(--picker-bg);
             color: var(--text-primary);
-            border-radius: 7px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        .segment-btn.active {
-            background: var(--card-bg);
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 600;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+            appearance: none; /* 隱藏原生箭頭 */
+            -webkit-appearance: none;
+            text-align: center;
+            outline: none;
+            cursor: pointer;
+        }
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-secondary);
+            pointer-events: none; /* 確保點擊能穿透觸發 select */
         }
 
-        /* 預覽文字區 - 優化：增加 max-height 與滾動，避免撐破版面 */
         .preview-text {
             font-size: 12px; 
             color: var(--text-primary); 
-            background: rgba(118, 118, 128, 0.08); 
+            background: var(--preview-bg); 
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 500; 
             line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-all;
             text-align: center;
-            max-height: 70px; /* 限制最高高度 */
-            overflow-y: auto; /* 內容過多時可內部滑動 */
-            transition: all 0.2s ease;
-        }
-        @media (prefers-color-scheme: dark) {
-            .preview-text { background: rgba(118, 118, 128, 0.18); color: #E5E5EA; }
+            max-height: 80px; 
+            overflow-y: auto; 
         }
         .preview-text:empty { display: none; }
 
@@ -302,6 +313,9 @@
 <body>
 
 <div class="app-container">
+    <!-- 主題切換按鈕 -->
+    <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+
     <div class="top-section">
         <div class="header">
             <h1>數字磁場分析</h1>
@@ -309,7 +323,7 @@
         </div>
         <div class="input-card">
             <div class="input-wrapper">
-                <input type="text" id="numInput" placeholder="輸入號碼 (如 11294757)" maxlength="20" value="">
+                <input type="text" id="numInput" placeholder="輸入號碼 (如 94134741)" maxlength="20" value="">
                 <div class="clear-btn" id="clearBtn" onclick="clearInput()">✕</div>
             </div>
         </div>
@@ -318,41 +332,36 @@
     <div class="scroll-area">
         <div id="resultList"></div>
         
+        <!-- 單行統計卡片 -->
         <div id="statsArea" class="stats-card">
-            <div class="stats-header">📊 整體磁場分析</div>
-            <div class="stats-list">
-                <div class="stats-row">
-                    <span class="stats-label">吉凶比例</span>
-                    <span class="stats-value" id="statRatio">吉 0% / 凶 0%</span>
-                </div>
-                <div class="stats-divider"></div>
-                <div class="stats-row">
-                    <span class="stats-label">能量流向</span>
-                    <span class="stats-value" id="statFlow">-</span>
-                </div>
-            </div>
+            <span class="stats-text-primary" id="statRatio">📊 吉 0% / 凶 0%</span>
+            <span class="stats-text-secondary" id="statFlow">🔄 -</span>
         </div>
     </div>
 
     <div class="footer-action" id="copyArea">
-        <div class="segment-control">
-            <button class="segment-btn active" id="btn-ai" onclick="setCopyMode('ai')">AI 專業</button>
-            <button class="segment-btn" id="btn-client" onclick="setCopyMode('client')">客戶簡報</button>
-            <button class="segment-btn" id="btn-numbers" onclick="setCopyMode('numbers')">純數字</button>
+        <!-- 向下滑動的選擇器 (下拉選單) -->
+        <div class="select-wrapper">
+            <select id="modeSelect" class="mode-select" onchange="setCopyMode(this.value)">
+                <option value="ai">輸出模式：AI 專業</option>
+                <option value="client">輸出模式：客戶簡報</option>
+                <option value="numbers">輸出模式：純數字</option>
+            </select>
         </div>
+        
         <div id="formattedText" class="preview-text"></div>
         <button class="copy-btn" onclick="copyResult()">一鍵複製結果</button>
     </div>
 </div>
 
 <script>
-    // 磁場資料庫
+    // 磁場資料庫 (絕命顏色改為隨主題自適應的 var(--text-primary) 以利深淺色辨識)
     const stars = {
         "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, color: "#FF2D55", type: "吉" },
         "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, color: "#34C759", type: "吉" },
         "延年": { levels: { "1級": ["19","91"], "2級": ["78","87"], "3級": ["34","43"], "4級": ["26","62"] }, color: "#FF9500", type: "吉" },
         "伏位": { levels: { "1級": ["11","22"], "2級": ["88","99"], "3級": ["66","77"], "4級": ["33","44"] }, color: "#32ADE6", type: "吉" },
-        "絕命": { levels: { "1級": ["12","21"], "2級": ["69","96"], "3級": ["48","84"], "4級": ["37","73"] }, color: "#1C1C1E", type: "凶" },
+        "絕命": { levels: { "1級": ["12","21"], "2級": ["69","96"], "3級": ["48","84"], "4級": ["37","73"] }, color: "var(--text-primary)", type: "凶" },
         "五鬼": { levels: { "1級": ["18","81"], "2級": ["79","97"], "3級": ["36","63"], "4級": ["24","42"] }, color: "#5856D6", type: "凶" },
         "六煞": { levels: { "1級": ["16","61"], "2級": ["47","74"], "3級": ["38","83"], "4級": ["29","92"] }, color: "#AF52DE", type: "凶" },
         "禍害": { levels: { "1級": ["17","71"], "2級": ["89","98"], "3級": ["46","64"], "4級": ["23","32"] }, color: "#FFCC00", type: "凶" }
@@ -363,10 +372,27 @@
     const list = document.getElementById('resultList');
     const statsArea = document.getElementById('statsArea');
     const formattedDisplay = document.getElementById('formattedText');
+    const modeSelect = document.getElementById('modeSelect');
     
     // 狀態管理
     let currentMode = 'ai'; 
     let currentCopyTexts = { ai: '', client: '', numbers: '' };
+
+    // 主題切換邏輯 (預設 Light)
+    function toggleTheme() {
+        triggerHaptic();
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const btn = document.getElementById('themeToggleBtn');
+        
+        if (currentTheme === 'dark') {
+            html.removeAttribute('data-theme');
+            btn.innerHTML = '🌙'; // 切回亮色，顯示月亮暗示切換深色
+        } else {
+            html.setAttribute('data-theme', 'dark');
+            btn.innerHTML = '☀️'; // 切換深色，顯示太陽暗示切回亮色
+        }
+    }
 
     // 監聽輸入事件
     input.addEventListener('input', () => {
@@ -383,25 +409,21 @@
         input.focus();
     }
 
-    // 觸覺回饋 (Haptic Feedback)
+    // 觸覺回饋
     function triggerHaptic() {
         if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(10);
         }
     }
 
-    /* === 模式切換邏輯 === */
+    /* === 模式切換邏輯 (透過下拉選單觸發) === */
     function setCopyMode(mode) {
         triggerHaptic();
         currentMode = mode;
-        document.getElementById('btn-ai').classList.remove('active');
-        document.getElementById('btn-client').classList.remove('active');
-        document.getElementById('btn-numbers').classList.remove('active');
-        document.getElementById(`btn-${mode}`).classList.add('active');
         formattedDisplay.innerText = currentCopyTexts[mode] || '';
     }
 
-    /* === 核心演算法 (保留所有功能) === */
+    /* === 核心演算法 (100%保留) === */
     function updateAnalysis() {
         const val = input.value.replace(/\D/g, '');
 
@@ -416,7 +438,6 @@
         let pairs = [];
         let i = 0;
         
-        // 滑動窗口 (處理連續 0/5)
         while (i < val.length - 1) {
             let j = i;
             let normalCount = 0;
@@ -481,39 +502,29 @@
         return parts.length > 0 ? `(${parts.join('')})` : "";
     }
 
-    // 渲染網格小卡片
+    // 渲染超迷你網格小卡 (Left Border 顏色指示，縮減卡片高度)
     function renderList(pairs) {
         list.innerHTML = pairs.map(p => {
             const star = getStarDetail(p);
             const modifier = getSmartModifier(p);
-            
-            let tagNote = modifier ? `<div class="num-modifier">${modifier}</div>` : "";
-            const lvlText = star ? `<div class="star-level">${star.level}</div>` : '';
-
-            // 針對深色模式調整凶星黑色標籤的對比度
-            let starColor = star ? star.color : '#CCC';
-            if (star && star.type === '凶' && star.name === '絕命') {
-                const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                starColor = isDarkMode ? '#3A3A3C' : '#1C1C1E';
-            }
+            const starColor = star ? star.color : 'var(--text-tertiary)';
 
             return `
-                <div class="result-item">
-                    <div>
-                        <div class="num-tag">${p}</div>
-                        ${tagNote}
+                <div class="result-item" style="border-left: 4px solid ${starColor};">
+                    <div class="card-row">
+                        <span class="num-tag">${p}</span>
+                        ${modifier ? `<span class="num-modifier">${modifier}</span>` : ''}
                     </div>
-                    <div class="star-name-wrapper">
-                        <div class="star-name">${star ? star.name : '未知'}</div>
-                        ${lvlText}
+                    <div class="card-row" style="margin-top: 4px;">
+                        <span class="star-name">${star ? star.name : '未知'}${star ? `<span class="star-level">${star.level}</span>` : ''}</span>
+                        <span class="star-type" style="color:${starColor};">${star ? star.type : '?'}</span>
                     </div>
-                    <div class="star-type" style="background:${starColor}">${star ? star.type : '?'}</div>
                 </div>
             `;
         }).join('');
     }
 
-    // 生成三種複製模式資料與統計卡片
+    // 生成資料與單行統計卡片
     function generateDataAndStats(rawNum, pairs) {
         let validStars = [];
         let luckyCount = 0;
@@ -550,39 +561,35 @@
         if (validStars.length >= 2) {
             let first = validStars[0];
             let last = validStars[validStars.length - 1];
-            flowText = `${first.type}轉${last.type}（${first.name} ➔ ${last.name}）`;
+            flowText = `${first.name} ➔ ${last.name}`;
         } else if (validStars.length === 1) {
-            flowText = `單一磁場（${validStars[0].name}）`;
+            flowText = `單一 (${validStars[0].name})`;
         }
 
         let statsString = `📊 統計：${ratioText}\n🔄 流向：${flowText}`;
         
-        // 更新三種模式文字
         currentCopyTexts = {
             ai: `${rawNum} ➔ ${aiItems.join(' + ')}\n\n${statsString}`,
             client: `${rawNum} ➔ ${clientItems.join(' ➔ ')}\n\n${statsString}`,
             numbers: numItems.join(', ')
         };
 
-        // 更新統計面板 UI
         if (total > 0) {
-            statsArea.style.display = "block";
-            document.getElementById('statRatio').innerText = ratioText;
-            document.getElementById('statFlow').innerText = flowText;
+            statsArea.style.display = "flex";
+            document.getElementById('statRatio').innerText = `📊 ${ratioText}`;
+            document.getElementById('statFlow').innerText = `🔄 ${flowText}`;
         } else {
             statsArea.style.display = "none";
         }
 
-        // 刷新當前顯示文字
+        // 刷新目前選擇模式的預覽文字
         formattedDisplay.innerText = currentCopyTexts[currentMode];
     }
 
-    /* === iOS 風格 Toast 提示機制 === */
+    /* === Toast 提示 === */
     function showToast(message) {
         const existingToast = document.getElementById('ios-toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
+        if (existingToast) existingToast.remove();
 
         const toast = document.createElement('div');
         toast.id = 'ios-toast';
@@ -590,15 +597,11 @@
         toast.innerHTML = message;
         document.body.appendChild(toast);
 
-        requestAnimationFrame(() => {
-            toast.classList.add('show');
-        });
+        requestAnimationFrame(() => toast.classList.add('show'));
 
         setTimeout(() => {
             toast.classList.remove('show');
-            toast.addEventListener('transitionend', () => {
-                toast.remove();
-            });
+            toast.addEventListener('transitionend', () => toast.remove());
         }, 2000);
     }
 
@@ -614,9 +617,7 @@
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
                 showToast('✅ 已成功複製到剪貼簿');
-            }).catch(() => {
-                fallbackCopyTextToClipboard(text);
-            });
+            }).catch(() => fallbackCopyTextToClipboard(text));
         } else {
             fallbackCopyTextToClipboard(text);
         }
@@ -639,7 +640,6 @@
         } catch (err) {
             showToast('❌ 複製失敗，請手動複製文字');
         }
-        
         textArea.remove();
     }
 </script>
