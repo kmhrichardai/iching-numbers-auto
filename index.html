@@ -23,6 +23,16 @@
             --shadow-inset: inset 0 1px 4px rgba(0,0,0,0.06);
             --hint-bg: rgba(0, 122, 255, 0.1); 
             --danger-bg: rgba(255, 59, 48, 0.1);
+
+            /* === 1. 解耦：定義八星磁場專用主題色 === */
+            --star-tianyi: #FF2D55;   /* 天醫 */
+            --star-shengqi: #34C759;  /* 生氣 */
+            --star-yannian: #FF9500;  /* 延年 */
+            --star-fuwei: #32ADE6;    /* 伏位 */
+            --star-jueming: #1C1C1E;  /* 絕命 (預設深色) */
+            --star-wugui: #5856D6;    /* 五鬼 */
+            --star-liusha: #AF52DE;   /* 六煞 */
+            --star-huohai: #FFCC00;   /* 禍害 */
         }
 
         /* === 深色模式變數 === */
@@ -42,6 +52,9 @@
             --shadow-inset: inset 0 1px 5px rgba(0,0,0,0.4);
             --hint-bg: rgba(10, 132, 255, 0.15); 
             --danger-bg: rgba(255, 69, 58, 0.15);
+
+            /* 深色模式下的絕命顏色特別處理，避免融入背景 */
+            --star-jueming: #8E8E93; 
         }
 
         body {
@@ -69,128 +82,56 @@
             overflow: hidden;
         }
 
-        /* ========== 頂部控制區 (左右對稱統一佈局) ========== */
-        .top-left-controls {
-            position: absolute;
-            top: 14px;
-            left: 16px;
-            display: flex;
-            gap: 8px;
-            z-index: 20;
-        }
-
-        .top-right-controls {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            display: flex;
-            gap: 8px;
-            z-index: 20;
-        }
+        /* ========== 頂部控制區 ========== */
+        .top-left-controls { position: absolute; top: 14px; left: 16px; display: flex; gap: 8px; z-index: 20; }
+        .top-right-controls { position: absolute; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 20; }
         
         .icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--input-bg);
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s, color 0.2s;
+            width: 32px; height: 32px; border-radius: 50%; background: var(--input-bg);
+            border: none; display: flex; justify-content: center; align-items: center;
+            font-size: 16px; cursor: pointer; transition: transform 0.2s, background-color 0.2s, color 0.2s;
             color: var(--text-primary);
         }
         .icon-btn:active { transform: scale(0.9); }
         .icon-btn.active { background: var(--accent-color); color: #FFFFFF; }
 
         .top-section {
-            flex-shrink: 0;
-            padding: 16px 16px 8px 16px;
-            background: var(--bg-color);
-            z-index: 10;
+            flex-shrink: 0; padding: 16px 16px 8px 16px; background: var(--bg-color); z-index: 10;
         }
 
-        .header { 
-            display: flex; 
-            align-items: baseline; 
-            justify-content: center; 
-            gap: 8px; 
-            margin-bottom: 12px; 
-            margin-top: 4px; 
-        }
+        .header { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 12px; margin-top: 4px; }
         .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
         .header p { color: var(--text-secondary); font-size: 11px; font-weight: 500; margin: 0; }
 
-        .input-card {
-            background: var(--card-bg);
-            padding: 8px;
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
+        .input-card { background: var(--card-bg); padding: 8px; border-radius: 14px; box-shadow: var(--shadow-sm); }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
 
         input {
-            width: 100%;
-            border: none;
-            background: var(--input-bg);
-            padding: 12px 36px 12px 12px; 
-            font-size: 22px;
-            border-radius: 10px;
-            outline: none;
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-primary);
-            transition: background 0.2s;
+            width: 100%; border: none; background: var(--input-bg); padding: 12px 36px 12px 12px; 
+            font-size: 22px; border-radius: 10px; outline: none; text-align: center;
+            font-weight: 600; color: var(--text-primary); transition: background 0.2s;
         }
         input:focus { filter: brightness(0.95); }
         input::placeholder { color: #A1A1A6; font-weight: 500; }
 
         .clear-btn {
-            position: absolute;
-            right: 10px;
-            width: 24px;
-            height: 24px;
-            background: var(--text-tertiary);
-            color: #FFF;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: none; 
-            user-select: none;
-            transition: opacity 0.2s;
+            position: absolute; right: 10px; width: 24px; height: 24px;
+            background: var(--text-tertiary); color: #FFF; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 14px; font-weight: 600; cursor: pointer; display: none; 
+            user-select: none; transition: opacity 0.2s;
         }
         .clear-btn:active { opacity: 0.7; }
 
         /* ========== 中間滑動區 ========== */
-        .scroll-area {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 4px 16px;
-            scrollbar-width: none;
-        }
+        .scroll-area { flex-grow: 1; overflow-y: auto; padding: 4px 16px; scrollbar-width: none; }
         .scroll-area::-webkit-scrollbar { display: none; }
 
         /* === 智慧配號 面板 === */
         .builder-panel {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 12px 14px;
-            box-shadow: var(--shadow-sm);
-            display: none; 
-            flex-direction: column;
-            margin-bottom: 12px;
-            animation: slideDown 0.3s ease forwards;
+            background: var(--card-bg); border-radius: 14px; padding: 12px 14px;
+            box-shadow: var(--shadow-sm); display: none; flex-direction: column;
+            margin-bottom: 12px; animation: slideDown 0.3s ease forwards;
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -208,7 +149,38 @@
             border: 1px solid transparent; transition: all 0.2s; user-select: none;
         }
         .pill.inactive { background: transparent !important; border-color: var(--divider-color) !important; color: var(--text-tertiary) !important; }
-        
+
+        /* === 1. 解耦：純 CSS 控制八星樣式 === */
+        /* 背景色 (用於 Pill) */
+        .star-bg-天醫 { background-color: var(--star-tianyi); color: #FFF; }
+        .star-bg-生氣 { background-color: var(--star-shengqi); color: #FFF; }
+        .star-bg-延年 { background-color: var(--star-yannian); color: #FFF; }
+        .star-bg-伏位 { background-color: var(--star-fuwei); color: #FFF; }
+        .star-bg-絕命 { background-color: var(--star-jueming); color: var(--bg-color); } /* 確保絕命文字可見 */
+        .star-bg-五鬼 { background-color: var(--star-wugui); color: #FFF; }
+        .star-bg-六煞 { background-color: var(--star-liusha); color: #FFF; }
+        .star-bg-禍害 { background-color: var(--star-huohai); color: #FFF; }
+
+        /* 文字色 (用於卡片文字、建議按鈕) */
+        .star-color-天醫 { color: var(--star-tianyi); }
+        .star-color-生氣 { color: var(--star-shengqi); }
+        .star-color-延年 { color: var(--star-yannian); }
+        .star-color-伏位 { color: var(--star-fuwei); }
+        .star-color-絕命 { color: var(--star-jueming); }
+        .star-color-五鬼 { color: var(--star-wugui); }
+        .star-color-六煞 { color: var(--star-liusha); }
+        .star-color-禍害 { color: var(--star-huohai); }
+
+        /* 左邊框 (用於結果卡片) */
+        .result-item.star-border-天醫 { border-left-color: var(--star-tianyi); }
+        .result-item.star-border-生氣 { border-left-color: var(--star-shengqi); }
+        .result-item.star-border-延年 { border-left-color: var(--star-yannian); }
+        .result-item.star-border-伏位 { border-left-color: var(--star-fuwei); }
+        .result-item.star-border-絕命 { border-left-color: var(--star-jueming); }
+        .result-item.star-border-五鬼 { border-left-color: var(--star-wugui); }
+        .result-item.star-border-六煞 { border-left-color: var(--star-liusha); }
+        .result-item.star-border-禍害 { border-left-color: var(--star-huohai); }
+
         .builder-suggestions {
             margin-top: 12px; background: var(--hint-bg); border-radius: 10px; padding: 10px;
             font-size: 12px; color: var(--text-primary); line-height: 1.6; font-weight: 500; display: none;
@@ -226,36 +198,18 @@
             font-weight: 600; display: none; 
         }
 
-        /* 迷你卡片排版 */
-        #resultList {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-            align-items: start;
-        }
+        #resultList { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; align-items: start; }
 
         .result-item {
-            background: var(--card-bg);
-            padding: 8px 10px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            overflow: hidden;
+            background: var(--card-bg); padding: 8px 10px; border-radius: 10px;
+            box-shadow: var(--shadow-sm); display: flex; flex-direction: column;
+            justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s ease;
+            overflow: hidden; border-left: 4px solid var(--text-tertiary);
         }
         .result-item:active { transform: scale(0.96); }
 
         .card-row { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
-        
-        /* 處理數字與修飾詞重疊的佈局 */
-        .card-row.top-row {
-            display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 4px; overflow: hidden;
-        }
+        .card-row.top-row { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 4px; overflow: hidden; }
 
         .num-tag { 
             font-size: 16px; font-weight: 700; color: var(--text-primary); 
@@ -267,7 +221,6 @@
             background: var(--hint-bg); padding: 2px 6px; border-radius: 6px;
         }
 
-        /* 點擊展開後的樣式 */
         .result-item.expanded .card-row.top-row { flex-wrap: wrap; }
         .result-item.expanded .num-tag { white-space: normal; word-break: break-all; overflow: visible; }
 
@@ -275,7 +228,6 @@
         .star-level { font-size: 10px; font-weight: 500; opacity: 0.8; }
         .star-type { font-size: 11px; font-weight: 700; }
 
-        /* 單行統計卡片 */
         .stats-card {
             background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow-sm); padding: 12px 14px;
             display: none; flex-direction: row; justify-content: space-between; align-items: center;
@@ -287,17 +239,14 @@
         /* ========== 歷史紀錄面板 ========== */
         .history-panel {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 100;
-            display: flex; flex-direction: column;
+            background: var(--bg-color); z-index: 100; display: flex; flex-direction: column;
             transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         .history-panel.show { transform: translateX(0); }
         
         .history-header {
-            flex-shrink: 0; padding: 16px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--card-bg); border-bottom: 1px solid var(--divider-color);
-            box-shadow: var(--shadow-sm);
+            flex-shrink: 0; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); border-bottom: 1px solid var(--divider-color); box-shadow: var(--shadow-sm);
         }
         .history-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
         .close-history-btn {
@@ -313,7 +262,7 @@
             box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.1s;
         }
         .history-item:active { transform: scale(0.98); }
-        .history-text { font-size: 16px; font-weight: 600; color: var(--text-primary); word-break: break-all; margin-right: 12px; }
+        .history-text { font-size: 16px; font-weight: 600; color: var(--text-primary); word-break: break-all; margin-right: 12px; pointer-events: none; }
         
         .history-del-btn {
             background: var(--danger-bg); color: #FF3B30; border: none; width: 28px; height: 28px;
@@ -331,8 +280,7 @@
 
         /* ========== 底部操作區 ========== */
         .footer-action {
-            flex-shrink: 0; 
-            padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) 16px; 
+            flex-shrink: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) 16px; 
             background: var(--footer-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-top: 1px solid var(--divider-color); display: flex; flex-direction: column;
             gap: 8px; box-shadow: var(--shadow-lg); z-index: 10;
@@ -372,6 +320,19 @@
             white-space: nowrap; transition: opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         .toast-message.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        /* === 3. 媒體查詢：適應小螢幕或開啟鍵盤的狀況 === */
+        @media screen and (max-height: 667px) {
+            .header { margin-bottom: 6px; margin-top: 0; }
+            .header h1 { font-size: 18px; }
+            input { font-size: 18px; padding: 8px 32px 8px 8px; }
+            .top-section { padding: 10px 16px 4px 16px; }
+            /* 縮小預覽框的高度，防擠壓 */
+            .preview-box { max-height: 38px; padding: 4px 8px; }
+            .footer-action { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+            .action-row { height: 38px; }
+            .builder-panel { padding: 8px 12px; margin-bottom: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -383,20 +344,21 @@
         <div class="history-header">
             <h2 class="history-title">搜尋紀錄</h2>
             <div>
-                <button class="clear-all-btn" onclick="clearAllHistory()">清除全部</button>
-                <button class="close-history-btn" onclick="toggleHistory()" style="margin-left: 10px;">✕</button>
+                <button class="clear-all-btn" id="btn-clear-history">清除全部</button>
+                <button class="close-history-btn" id="btn-close-history" style="margin-left: 10px;">✕</button>
             </div>
         </div>
+        <!-- 使用事件委派監聽清單 -->
         <div id="historyList" class="history-list"></div>
     </div>
 
-    <!-- 頂部控制區 (完全對稱對齊) -->
+    <!-- 頂部控制區 -->
     <div class="top-left-controls">
-        <button class="icon-btn" onclick="toggleHistory()" title="搜尋歷史">🕒</button>
+        <button class="icon-btn" id="btn-open-history" title="搜尋歷史">🕒</button>
     </div>
     <div class="top-right-controls">
-        <button class="icon-btn" id="builderToggleBtn" onclick="toggleBuilder()" title="開啟智慧選號模式">🎯</button>
-        <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="切換深淺模式">🌙</button>
+        <button class="icon-btn" id="builderToggleBtn" title="開啟智慧選號模式">🎯</button>
+        <button class="icon-btn" id="themeToggleBtn" title="切換深淺模式">🌙</button>
     </div>
 
     <div class="top-section">
@@ -408,7 +370,7 @@
         <div class="input-card">
             <div class="input-wrapper">
                 <input type="text" id="numInput" placeholder="輸入號碼 (支援車牌/英文名)" value="">
-                <div class="clear-btn" id="clearBtn" onclick="clearInput()">✕</div>
+                <div class="clear-btn" id="clearBtn">✕</div>
             </div>
         </div>
     </div>
@@ -417,7 +379,7 @@
         <div id="builderPanel" class="builder-panel">
             <div class="builder-row">
                 <span class="builder-label">限制目標長度 (字數)</span>
-                <input type="number" id="builderMaxLen" value="8" min="2" max="20" class="builder-input-small" onchange="updateAnalysis()">
+                <input type="number" id="builderMaxLen" value="8" min="2" max="20" class="builder-input-small">
             </div>
             <div class="builder-label" style="margin-top: 12px; margin-bottom: 2px;">允許產生的磁場 (點擊勾選)</div>
             <div class="star-pills" id="starPills"></div>
@@ -425,6 +387,8 @@
         </div>
 
         <div id="conversionHint" class="conversion-hint"></div>
+        
+        <!-- 卡片清單區域，使用事件委派 -->
         <div id="resultList"></div>
         
         <div id="statsArea" class="stats-card">
@@ -436,13 +400,13 @@
     <div class="footer-action" id="copyArea">
         <div class="action-row">
             <div class="select-wrapper">
-                <select id="modeSelect" class="mode-select" onchange="setCopyMode(this.value)">
+                <select id="modeSelect" class="mode-select">
                     <option value="ai">模式：AI 專業</option>
                     <option value="client">模式：客戶簡報</option>
                     <option value="numbers">模式：純數字</option>
                 </select>
             </div>
-            <button class="copy-btn" onclick="copyResult()">複製</button>
+            <button class="copy-btn" id="btn-copy">複製</button>
         </div>
         
         <div id="previewContainer" class="preview-box">
@@ -452,15 +416,16 @@
 </div>
 
 <script>
+    // 移除 Color 設定，完全交由 CSS class 管理
     const stars = {
-        "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, color: "#FF2D55", type: "吉" },
-        "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, color: "#34C759", type: "吉" },
-        "延年": { levels: { "1級": ["19","91"], "2級": ["78","87"], "3級": ["34","43"], "4級": ["26","62"] }, color: "#FF9500", type: "吉" },
-        "伏位": { levels: { "1級": ["11","22"], "2級": ["88","99"], "3級": ["66","77"], "4級": ["33","44"] }, color: "#32ADE6", type: "吉" },
-        "絕命": { levels: { "1級": ["12","21"], "2級": ["69","96"], "3級": ["48","84"], "4級": ["37","73"] }, color: "var(--text-primary)", type: "凶" },
-        "五鬼": { levels: { "1級": ["18","81"], "2級": ["79","97"], "3級": ["36","63"], "4級": ["24","42"] }, color: "#5856D6", type: "凶" },
-        "六煞": { levels: { "1級": ["16","61"], "2級": ["47","74"], "3級": ["38","83"], "4級": ["29","92"] }, color: "#AF52DE", type: "凶" },
-        "禍害": { levels: { "1級": ["17","71"], "2級": ["89","98"], "3級": ["46","64"], "4級": ["23","32"] }, color: "#FFCC00", type: "凶" }
+        "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, type: "吉" },
+        "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, type: "吉" },
+        "延年": { levels: { "1級": ["19","91"], "2級": ["78","87"], "3級": ["34","43"], "4級": ["26","62"] }, type: "吉" },
+        "伏位": { levels: { "1級": ["11","22"], "2級": ["88","99"], "3級": ["66","77"], "4級": ["33","44"] }, type: "吉" },
+        "絕命": { levels: { "1級": ["12","21"], "2級": ["69","96"], "3級": ["48","84"], "4級": ["37","73"] }, type: "凶" },
+        "五鬼": { levels: { "1級": ["18","81"], "2級": ["79","97"], "3級": ["36","63"], "4級": ["24","42"] }, type: "凶" },
+        "六煞": { levels: { "1級": ["16","61"], "2級": ["47","74"], "3級": ["38","83"], "4級": ["29","92"] }, type: "凶" },
+        "禍害": { levels: { "1級": ["17","71"], "2級": ["89","98"], "3級": ["46","64"], "4級": ["23","32"] }, type: "凶" }
     };
 
     const letterMap = {
@@ -469,6 +434,7 @@
         'S':1, 'T':2, 'U':3, 'V':4, 'W':5, 'X':6, 'Y':7, 'Z':8
     };
 
+    // DOM 元素快取
     const input = document.getElementById('numInput');
     const clearBtn = document.getElementById('clearBtn');
     const list = document.getElementById('resultList');
@@ -476,17 +442,95 @@
     const previewContainer = document.getElementById('previewContainer');
     const formattedDisplay = document.getElementById('formattedText');
     const conversionHint = document.getElementById('conversionHint');
+    const modeSelect = document.getElementById('modeSelect');
     
+    // 狀態變數
     let currentMode = 'ai'; 
     let currentCopyTexts = { ai: '', client: '', numbers: '' };
-    
     let builderActive = false;
     let activeStars = ['天醫', '生氣', '延年', '伏位'];
     let prevValidRaw = ''; 
     let saveHistoryTimeout = null;
     let searchHistory = JSON.parse(localStorage.getItem('magnetic_history') || '[]');
 
-    renderHistory();
+    /* === 2. 安全綁定與事件委派 (Event Delegation) 初始化 === */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderHistory();
+
+        // 綁定靜態 UI 事件
+        document.getElementById('btn-open-history').addEventListener('click', toggleHistory);
+        document.getElementById('btn-close-history').addEventListener('click', toggleHistory);
+        document.getElementById('btn-clear-history').addEventListener('click', clearAllHistory);
+        document.getElementById('builderToggleBtn').addEventListener('click', toggleBuilder);
+        document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+        document.getElementById('btn-copy').addEventListener('click', copyResult);
+        clearBtn.addEventListener('click', clearInput);
+
+        // 輸入框與選項事件
+        input.addEventListener('input', () => {
+            clearBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
+            updateAnalysis();
+        });
+
+        document.getElementById('builderMaxLen').addEventListener('change', updateAnalysis);
+        
+        modeSelect.addEventListener('change', (e) => {
+            triggerHaptic();
+            currentMode = e.target.value;
+            formattedDisplay.innerText = currentCopyTexts[currentMode] || '';
+        });
+
+        // 委派事件：歷史紀錄列表 (處理點擊項目與刪除按鈕)
+        document.getElementById('historyList').addEventListener('click', (e) => {
+            const delBtn = e.target.closest('.history-del-btn');
+            if (delBtn) {
+                e.stopPropagation();
+                deleteHistoryItem(delBtn.dataset.val);
+                return;
+            }
+            const itemDiv = e.target.closest('.history-item');
+            if (itemDiv) {
+                loadHistoryItem(itemDiv.dataset.val);
+            }
+        });
+
+        // 委派事件：智慧選號膠囊 (Pills)
+        document.getElementById('starPills').addEventListener('click', (e) => {
+            const pill = e.target.closest('.pill');
+            if (pill && pill.dataset.star) {
+                toggleStar(pill.dataset.star);
+            }
+        });
+
+        // 委派事件：智慧推薦按鈕
+        document.getElementById('builderSuggestions').addEventListener('click', (e) => {
+            const btn = e.target.closest('.suggest-btn');
+            if (btn && btn.dataset.char) {
+                appendChar(btn.dataset.char);
+            }
+        });
+
+        // 委派事件：分析結果卡片點擊展開
+        list.addEventListener('click', (e) => {
+            const item = e.target.closest('.result-item');
+            if (item) {
+                item.classList.toggle('expanded');
+            }
+        });
+    });
+
+    // 輔助防護函數：跳脫 HTML 字元，防止 XSS
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
 
     function toggleTheme() {
         triggerHaptic();
@@ -501,7 +545,6 @@
             html.setAttribute('data-theme', 'dark');
             btn.innerHTML = '☀️'; 
         }
-        if (builderActive) renderPills();
     }
 
     function triggerHaptic() {
@@ -511,8 +554,7 @@
     /* === 歷史紀錄控制 === */
     function toggleHistory() {
         triggerHaptic();
-        const panel = document.getElementById('historyPanel');
-        panel.classList.toggle('show');
+        document.getElementById('historyPanel').classList.toggle('show');
     }
 
     function saveToHistory(val) {
@@ -521,7 +563,6 @@
         
         searchHistory = searchHistory.filter(item => item !== cleanVal);
         searchHistory.unshift(cleanVal);
-        
         if (searchHistory.length > 50) searchHistory.pop();
         
         localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
@@ -531,11 +572,11 @@
     function loadHistoryItem(val) {
         input.value = val;
         toggleHistory();
+        clearBtn.style.display = 'flex';
         updateAnalysis();
     }
 
-    function deleteHistoryItem(event, val) {
-        event.stopPropagation(); 
+    function deleteHistoryItem(val) {
         searchHistory = searchHistory.filter(item => item !== val);
         localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
         renderHistory();
@@ -555,12 +596,16 @@
             listDiv.innerHTML = '<div class="empty-history">暫無紀錄</div>';
             return;
         }
-        listDiv.innerHTML = searchHistory.map(item => `
-            <div class="history-item" onclick="loadHistoryItem('${item}')">
-                <span class="history-text">${item}</span>
-                <button class="history-del-btn" onclick="deleteHistoryItem(event, '${item}')">✕</button>
+        // 使用 data-val 傳遞數據給委派事件，並確保 XSS 安全
+        listDiv.innerHTML = searchHistory.map(item => {
+            const safeItem = escapeHTML(item);
+            return `
+            <div class="history-item" data-val="${safeItem}">
+                <span class="history-text">${safeItem}</span>
+                <button class="history-del-btn" data-val="${safeItem}">✕</button>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     /* === 智慧配號控制 === */
@@ -593,24 +638,16 @@
         updateAnalysis();
     }
 
+    /* 1. 解耦：完全透過 CSS class 控制顏色與狀態 */
     function renderPills() {
         const container = document.getElementById('starPills');
         container.innerHTML = Object.keys(stars).map(s => {
             const isActive = activeStars.includes(s);
-            if (isActive) {
-                let bg = (s === '絕命') ? 'var(--text-primary)' : stars[s].color;
-                let tc = (s === '絕命') ? 'var(--bg-color)' : '#FFF';
-                return `<div class="pill" style="background:${bg}; color:${tc};" onclick="toggleStar('${s}')">${s}</div>`;
-            } else {
-                return `<div class="pill inactive" onclick="toggleStar('${s}')">${s}</div>`;
-            }
+            const classNames = isActive ? `pill star-bg-${s}` : `pill inactive`;
+            // 使用 data-star 供委派事件讀取
+            return `<div class="${classNames}" data-star="${s}">${s}</div>`;
         }).join('');
     }
-
-    input.addEventListener('input', () => {
-        clearBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
-        updateAnalysis();
-    });
 
     function clearInput() {
         triggerHaptic();
@@ -619,12 +656,6 @@
         clearBtn.style.display = 'none';
         updateAnalysis();
         input.focus();
-    }
-
-    function setCopyMode(mode) {
-        triggerHaptic();
-        currentMode = mode;
-        formattedDisplay.innerText = currentCopyTexts[mode] || '';
     }
 
     /* === 核心運算 === */
@@ -692,12 +723,10 @@
         renderSuggestions(convertedVal);
     }
 
-    /* === 修復過後的正確分組演算法 === */
     function getPairs(val) {
         let pairs = [];
         if (!val || val.length === 0) return pairs;
         
-        // 1. 紀錄所有「有效數字（1-4, 6-9）」的索引位置
         let normalIndices = [];
         for (let i = 0; i < val.length; i++) {
             if (val[i] !== '0' && val[i] !== '5') {
@@ -705,22 +734,15 @@
             }
         }
 
-        // 2. 特殊情況處理：若沒有有效數字，或只有一個有效數字
         if (normalIndices.length === 0) return pairs; 
         if (normalIndices.length === 1) {
-            pairs.push(val); // 整個字串只當作一個獨立數字處理 (觸發單獨數字的伏位機制)
+            pairs.push(val);
             return pairs;
         }
 
-        // 3. 在相鄰的有效數字之間精準切割
         for (let k = 0; k < normalIndices.length - 1; k++) {
-            // 第一組會涵蓋開頭可能有的前綴 0 或 5
             let sliceStart = (k === 0) ? 0 : normalIndices[k];
-            
-            // 最後一組會涵蓋結尾可能有的後綴 0 或 5
-            // 非最後一組則精準切到下一個有效數字
             let sliceEnd = (k === normalIndices.length - 2) ? val.length : normalIndices[k + 1] + 1;
-            
             pairs.push(val.substring(sliceStart, sliceEnd));
         }
         return pairs;
@@ -733,6 +755,7 @@
         updateAnalysis();
     }
 
+    /* 1. & 2. 解耦 CSS 且套用 data-char 供委派使用 */
     function renderSuggestions(convertedVal) {
         const sugBox = document.getElementById('builderSuggestions');
         if (!builderActive || convertedVal.length === 0) {
@@ -752,8 +775,7 @@
 
             if (allowedNums.length > 0) {
                 let numBtns = allowedNums.map(item => {
-                    let c = stars[item.star].color === 'var(--text-primary)' ? 'inherit' : stars[item.star].color;
-                    return `<span class="suggest-btn" style="color:${c};" onclick="appendChar('${item.num}')">${item.num} (${item.star})</span>`;
+                    return `<span class="suggest-btn star-color-${item.star}" data-char="${item.num}">${item.num} (${item.star})</span>`;
                 }).join('');
 
                 let lettersForNum = {};
@@ -764,7 +786,7 @@
                 });
 
                 let letterBtns = allowedNums.map(item => {
-                    return lettersForNum[item.num].map(L => `<span class="suggest-btn" onclick="appendChar('${L}')">${L}</span>`).join('');
+                    return lettersForNum[item.num].map(L => `<span class="suggest-btn" data-char="${L}">${L}</span>`).join('');
                 }).join('');
                 
                 sugBox.innerHTML = `💡 <b>點擊直接插入推薦數字：</b><br>${numBtns}<br><br>🔠 <b>點擊直接插入推薦字母：</b><br>${letterBtns}`;
@@ -787,7 +809,7 @@
 
         for (let s in stars) {
             for (let lvl in stars[s].levels) {
-                if (stars[s].levels[lvl].includes(clean)) return { name: s, coreNum: clean, level: lvl, color: stars[s].color, type: stars[s].type };
+                if (stars[s].levels[lvl].includes(clean)) return { name: s, coreNum: clean, level: lvl, type: stars[s].type };
             }
         }
         return null;
@@ -802,19 +824,23 @@
         return parts.length > 0 ? parts.join(' ') : "";
     }
 
+    /* 1. 樣式解耦: 邊框與文字顏色交給 CSS */
     function renderList(pairs) {
         list.innerHTML = pairs.map(p => {
             const star = getStarDetail(p); 
             const modifierUI = getSmartModifierUI(p);
-            const starColor = star ? star.color : 'var(--text-tertiary)';
+            // 根據取得的星名決定 CSS class
+            const borderClass = star ? `star-border-${star.name}` : '';
+            const colorClass = star ? `star-color-${star.name}` : 'text-tertiary';
+
             return `
-                <div class="result-item" onclick="this.classList.toggle('expanded')" style="border-left: 4px solid ${starColor};">
+                <div class="result-item ${borderClass}">
                     <div class="card-row top-row">
-                        <span class="num-tag">${p}</span>${modifierUI ? `<span class="num-modifier">${modifierUI}</span>` : ''}
+                        <span class="num-tag">${escapeHTML(p)}</span>${modifierUI ? `<span class="num-modifier">${modifierUI}</span>` : ''}
                     </div>
                     <div class="card-row">
                         <span class="star-name">${star ? star.name : '未知'}${star ? `<span class="star-level">${star.level}</span>` : ''}</span>
-                        <span class="star-type" style="color:${starColor};">${star ? star.type : '?'}</span>
+                        <span class="star-type ${colorClass}">${star ? star.type : '?'}</span>
                     </div>
                 </div>`;
         }).join('');
