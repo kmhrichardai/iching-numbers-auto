@@ -69,7 +69,16 @@
             overflow: hidden;
         }
 
-        /* ========== 頂部控制區 ========== */
+        /* ========== 頂部控制區 (左右對稱統一佈局) ========== */
+        .top-left-controls {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+        }
+
         .top-right-controls {
             position: absolute;
             top: 14px;
@@ -103,22 +112,14 @@
             z-index: 10;
         }
 
-        .header-container {
+        .header { 
             display: flex; 
-            align-items: center; 
+            align-items: baseline; 
             justify-content: center; 
-            position: relative;
+            gap: 8px; 
             margin-bottom: 12px; 
-            margin-top: 4px;
+            margin-top: 4px; 
         }
-        
-        /* 歷史紀錄按鈕 (置左) */
-        .history-btn {
-            position: absolute;
-            left: 0;
-        }
-
-        .header { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
         .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
         .header p { color: var(--text-secondary); font-size: 11px; font-weight: 500; margin: 0; }
 
@@ -225,7 +226,7 @@
             font-weight: 600; display: none; 
         }
 
-        /* 迷你卡片排版 - 新增對超長數字的控制 */
+        /* 迷你卡片排版 */
         #resultList {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -389,19 +390,19 @@
         <div id="historyList" class="history-list"></div>
     </div>
 
-    <!-- 頂部控制區 -->
+    <!-- 頂部控制區 (完全對稱對齊) -->
+    <div class="top-left-controls">
+        <button class="icon-btn" onclick="toggleHistory()" title="搜尋歷史">🕒</button>
+    </div>
     <div class="top-right-controls">
         <button class="icon-btn" id="builderToggleBtn" onclick="toggleBuilder()" title="開啟智慧選號模式">🎯</button>
         <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="切換深淺模式">🌙</button>
     </div>
 
     <div class="top-section">
-        <div class="header-container">
-            <button class="icon-btn history-btn" onclick="toggleHistory()" title="搜尋歷史">🕒</button>
-            <div class="header">
-                <h1>數字磁場分析</h1>
-                <p>Pro Edition</p>
-            </div>
+        <div class="header">
+            <h1>數字磁場分析</h1>
+            <p>Pro Edition</p>
         </div>
         
         <div class="input-card">
@@ -485,7 +486,6 @@
     let saveHistoryTimeout = null;
     let searchHistory = JSON.parse(localStorage.getItem('magnetic_history') || '[]');
 
-    // 初始化渲染歷史紀錄
     renderHistory();
 
     function toggleTheme() {
@@ -519,11 +519,9 @@
         let cleanVal = val.trim();
         if (!cleanVal || cleanVal.length < 2) return;
         
-        // 移除舊的相同紀錄並推播至最前
         searchHistory = searchHistory.filter(item => item !== cleanVal);
         searchHistory.unshift(cleanVal);
         
-        // 限制最多儲存 50 筆
         if (searchHistory.length > 50) searchHistory.pop();
         
         localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
@@ -537,7 +535,7 @@
     }
 
     function deleteHistoryItem(event, val) {
-        event.stopPropagation(); // 阻止觸發讀取號碼事件
+        event.stopPropagation(); 
         searchHistory = searchHistory.filter(item => item !== val);
         localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
         renderHistory();
@@ -634,7 +632,6 @@
         let rawStr = input.value.toUpperCase();
         let cleanedRaw = rawStr.replace(/[^A-Z0-9]/g, ''); 
 
-        // 自動儲存至歷史紀錄 (防抖處理: 輸入停止後 1.5秒觸發)
         clearTimeout(saveHistoryTimeout);
         if (rawStr.length >= 2) {
             saveHistoryTimeout = setTimeout(() => {
@@ -695,26 +692,36 @@
         renderSuggestions(convertedVal);
     }
 
+    /* === 修復過後的正確分組演算法 === */
     function getPairs(val) {
         let pairs = [];
-        if (!val || val.length < 2) return pairs;
+        if (!val || val.length === 0) return pairs;
         
-        for (let i = 0; i < val.length - 1; i++) {
-            let chunk = val[i];
-            let normalCount = (val[i] !== '0' && val[i] !== '5') ? 1 : 0;
-            let j = i + 1;
+        // 1. 紀錄所有「有效數字（1-4, 6-9）」的索引位置
+        let normalIndices = [];
+        for (let i = 0; i < val.length; i++) {
+            if (val[i] !== '0' && val[i] !== '5') {
+                normalIndices.push(i);
+            }
+        }
+
+        // 2. 特殊情況處理：若沒有有效數字，或只有一個有效數字
+        if (normalIndices.length === 0) return pairs; 
+        if (normalIndices.length === 1) {
+            pairs.push(val); // 整個字串只當作一個獨立數字處理 (觸發單獨數字的伏位機制)
+            return pairs;
+        }
+
+        // 3. 在相鄰的有效數字之間精準切割
+        for (let k = 0; k < normalIndices.length - 1; k++) {
+            // 第一組會涵蓋開頭可能有的前綴 0 或 5
+            let sliceStart = (k === 0) ? 0 : normalIndices[k];
             
-            while (j < val.length) {
-                chunk += val[j];
-                if (val[j] !== '0' && val[j] !== '5') {
-                    normalCount++;
-                }
-                if (normalCount >= 2) break;
-                j++;
-            }
-            if (normalCount >= 2 || (normalCount === 1 && j >= val.length)) {
-                pairs.push(chunk);
-            }
+            // 最後一組會涵蓋結尾可能有的後綴 0 或 5
+            // 非最後一組則精準切到下一個有效數字
+            let sliceEnd = (k === normalIndices.length - 2) ? val.length : normalIndices[k + 1] + 1;
+            
+            pairs.push(val.substring(sliceStart, sliceEnd));
         }
         return pairs;
     }
@@ -786,7 +793,6 @@
         return null;
     }
 
-    // 將修飾詞產出獨立文字 (無括號)，以套用至 Badge UI
     function getSmartModifierUI(p) {
         let zeroCount = (p.match(/0/g) || []).length; 
         let fiveCount = (p.match(/5/g) || []).length;
@@ -797,7 +803,6 @@
     }
 
     function renderList(pairs) {
-        // 卡片加入 onclick="this.classList.toggle('expanded')" 可達成點擊展開效果
         list.innerHTML = pairs.map(p => {
             const star = getStarDetail(p); 
             const modifierUI = getSmartModifierUI(p);
@@ -827,7 +832,6 @@
             const starName = star ? star.name : "未知"; const coreNum = star ? star.coreNum : p;
             const level = star ? `-${star.level}` : ''; 
             
-            // 複製文字輸出維持括號格式以利閱讀
             const modifierUI = getSmartModifierUI(p);
             const modifierCopy = modifierUI ? `(${modifierUI})` : '';
             
