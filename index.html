@@ -95,6 +95,7 @@
             justify-content: space-between;
             margin-bottom: 16px;
             width: 100%;
+            position: relative; /* 💡 加入相對定位，作為標題絕對置中的基準 */
         }
 
         .nav-left, .nav-right {
@@ -113,7 +114,7 @@
         .icon-btn:active { transform: scale(0.9); }
         .icon-btn.active { background: var(--accent-color); color: #FFFFFF; }
 
-        /* --- 標題排版修改：上下置中排列 --- */
+        /* --- 標題排版修改：強制畫面正中央 --- */
         .header { 
             display: flex; 
             flex-direction: column; 
@@ -121,8 +122,11 @@
             justify-content: center; 
             gap: 2px;               
             margin: 0; 
-            flex-grow: 1;
-            overflow: hidden;
+            /* 💡 絕對置中設定：不受左右按鈕數量影響 */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content; 
         }
 
         .header h1 { 
@@ -419,7 +423,7 @@
         
         <div class="input-card">
             <div class="input-wrapper">
-                <input type="text" id="numInput" placeholder="輸入號碼 (支援車牌/英文名)" value="">
+                <input type="text" id="numInput" placeholder="輸入號碼/英文" value="">
                 <div class="clear-btn" id="clearBtn">✕</div>
             </div>
         </div>
