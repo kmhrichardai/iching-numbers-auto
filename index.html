@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>八星磁場分析 - Apple Pro Edition</title>
     <style>
         /* === 定義顏色變數 (預設 Light Mode) === */
@@ -24,7 +24,7 @@
             --hint-bg: rgba(0, 122, 255, 0.1); 
             --danger-bg: rgba(255, 59, 48, 0.1);
 
-            /* === 1. 解耦：定義八星磁場專用主題色 === */
+            /* === 八星磁場專用主題色 === */
             --star-tianyi: #FF2D55;   /* 天醫 */
             --star-shengqi: #34C759;  /* 生氣 */
             --star-yannian: #FF9500;  /* 延年 */
@@ -52,8 +52,6 @@
             --shadow-inset: inset 0 1px 5px rgba(0,0,0,0.4);
             --hint-bg: rgba(10, 132, 255, 0.15); 
             --danger-bg: rgba(255, 69, 58, 0.15);
-
-            /* 深色模式下的絕命顏色特別處理，避免融入背景 */
             --star-jueming: #8E8E93; 
         }
 
@@ -82,9 +80,31 @@
             overflow: hidden;
         }
 
-        /* ========== 頂部控制區 ========== */
-        .top-left-controls { position: absolute; top: 14px; left: 16px; display: flex; gap: 8px; z-index: 20; }
-        .top-right-controls { position: absolute; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 20; }
+        /* ========== 修改後的：頂部導覽列控制區 ========== */
+        /* 取代原本的 position: absolute，改用 Flex 佈局保證不重疊 */
+        .top-section {
+            flex-shrink: 0; 
+            padding: 16px 16px 12px 16px; 
+            /* 加入 env(safe-area-inset-top) 防瀏海擋住 */
+            padding-top: calc(16px + env(safe-area-inset-top)); 
+            background: var(--bg-color); 
+            z-index: 10;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px; /* 與下方 Search Bar 保持安全距離 */
+            width: 100%;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+            flex-shrink: 0; /* 防止按鈕被文字擠壓 */
+        }
         
         .icon-btn {
             width: 32px; height: 32px; border-radius: 50%; background: var(--input-bg);
@@ -95,14 +115,36 @@
         .icon-btn:active { transform: scale(0.9); }
         .icon-btn.active { background: var(--accent-color); color: #FFFFFF; }
 
-        .top-section {
-            flex-shrink: 0; padding: 16px 16px 8px 16px; background: var(--bg-color); z-index: 10;
+        .header { 
+            display: flex; 
+            align-items: baseline; 
+            justify-content: center; 
+            gap: 6px; 
+            margin: 0; 
+            flex-grow: 1; /* 標題佔據中間剩餘空間 */
+            overflow: hidden;
+        }
+        
+        .header h1 { 
+            font-size: 18px; /* 稍微縮小以完美適應單行 */
+            font-weight: 700; 
+            letter-spacing: 0.3px; 
+            margin: 0; 
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            overflow: hidden; 
+        }
+        
+        .header p { 
+            color: var(--text-secondary); 
+            font-size: 11px; 
+            font-weight: 500; 
+            margin: 0; 
+            white-space: nowrap; 
+            flex-shrink: 0;
         }
 
-        .header { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 12px; margin-top: 4px; }
-        .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; margin: 0; }
-        .header p { color: var(--text-secondary); font-size: 11px; font-weight: 500; margin: 0; }
-
+        /* ========== 搜尋輸入框 ========== */
         .input-card { background: var(--card-bg); padding: 8px; border-radius: 14px; box-shadow: var(--shadow-sm); }
         .input-wrapper { position: relative; display: flex; align-items: center; }
 
@@ -150,18 +192,16 @@
         }
         .pill.inactive { background: transparent !important; border-color: var(--divider-color) !important; color: var(--text-tertiary) !important; }
 
-        /* === 1. 解耦：純 CSS 控制八星樣式 === */
-        /* 背景色 (用於 Pill) */
+        /* === 純 CSS 控制八星樣式 === */
         .star-bg-天醫 { background-color: var(--star-tianyi); color: #FFF; }
         .star-bg-生氣 { background-color: var(--star-shengqi); color: #FFF; }
         .star-bg-延年 { background-color: var(--star-yannian); color: #FFF; }
         .star-bg-伏位 { background-color: var(--star-fuwei); color: #FFF; }
-        .star-bg-絕命 { background-color: var(--star-jueming); color: var(--bg-color); } /* 確保絕命文字可見 */
+        .star-bg-絕命 { background-color: var(--star-jueming); color: var(--bg-color); } 
         .star-bg-五鬼 { background-color: var(--star-wugui); color: #FFF; }
         .star-bg-六煞 { background-color: var(--star-liusha); color: #FFF; }
         .star-bg-禍害 { background-color: var(--star-huohai); color: #FFF; }
 
-        /* 文字色 (用於卡片文字、建議按鈕) */
         .star-color-天醫 { color: var(--star-tianyi); }
         .star-color-生氣 { color: var(--star-shengqi); }
         .star-color-延年 { color: var(--star-yannian); }
@@ -171,7 +211,6 @@
         .star-color-六煞 { color: var(--star-liusha); }
         .star-color-禍害 { color: var(--star-huohai); }
 
-        /* 左邊框 (用於結果卡片) */
         .result-item.star-border-天醫 { border-left-color: var(--star-tianyi); }
         .result-item.star-border-生氣 { border-left-color: var(--star-shengqi); }
         .result-item.star-border-延年 { border-left-color: var(--star-yannian); }
@@ -245,7 +284,8 @@
         .history-panel.show { transform: translateX(0); }
         
         .history-header {
-            flex-shrink: 0; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; padding: 16px 20px; padding-top: calc(16px + env(safe-area-inset-top));
+            display: flex; justify-content: space-between; align-items: center;
             background: var(--card-bg); border-bottom: 1px solid var(--divider-color); box-shadow: var(--shadow-sm);
         }
         .history-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
@@ -321,13 +361,15 @@
         }
         .toast-message.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* === 3. 媒體查詢：適應小螢幕或開啟鍵盤的狀況 === */
+        /* === 媒體查詢：適應小螢幕 === */
         @media screen and (max-height: 667px) {
-            .header { margin-bottom: 6px; margin-top: 0; }
-            .header h1 { font-size: 18px; }
+            .navbar { margin-bottom: 12px; }
+            .header h1 { font-size: 17px; }
             input { font-size: 18px; padding: 8px 32px 8px 8px; }
-            .top-section { padding: 10px 16px 4px 16px; }
-            /* 縮小預覽框的高度，防擠壓 */
+            .top-section { 
+                padding: 10px 16px 8px 16px; 
+                padding-top: calc(10px + env(safe-area-inset-top)); 
+            }
             .preview-box { max-height: 38px; padding: 4px 8px; }
             .footer-action { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
             .action-row { height: 38px; }
@@ -348,33 +390,36 @@
                 <button class="close-history-btn" id="btn-close-history" style="margin-left: 10px;">✕</button>
             </div>
         </div>
-        <!-- 使用事件委派監聽清單 -->
         <div id="historyList" class="history-list"></div>
     </div>
 
-    <!-- 頂部控制區 -->
-    <div class="top-left-controls">
-        <button class="icon-btn" id="btn-open-history" title="搜尋歷史">🕒</button>
-    </div>
-    <div class="top-right-controls">
-        <button class="icon-btn" id="builderToggleBtn" title="開啟智慧選號模式">🎯</button>
-        <button class="icon-btn" id="themeToggleBtn" title="切換深淺模式">🌙</button>
-    </div>
-
+    <!-- 頂部控制區與標題合併 (Navbar 結構) -->
     <div class="top-section">
-        <div class="header">
-            <h1>數字磁場分析</h1>
-            <p>Pro Edition</p>
+        <div class="navbar">
+            <div class="nav-left">
+                <button class="icon-btn" id="btn-open-history" title="搜尋歷史">🕒</button>
+            </div>
+            
+            <div class="header">
+                <h1>數字磁場分析</h1>
+                <p>Pro Edition</p>
+            </div>
+            
+            <div class="nav-right">
+                <button class="icon-btn" id="builderToggleBtn" title="開啟智慧選號模式">🎯</button>
+                <button class="icon-btn" id="themeToggleBtn" title="切換深淺模式">🌙</button>
+            </div>
         </div>
         
         <div class="input-card">
             <div class="input-wrapper">
-                <input type="text" id="numInput" placeholder="輸入號碼 (支援車牌/英文名)" value="">
+                <input type="text" id="numInput" placeholder="輸入號碼/英文" value="">
                 <div class="clear-btn" id="clearBtn">✕</div>
             </div>
         </div>
     </div>
 
+    <!-- 滑動內容區 -->
     <div class="scroll-area">
         <div id="builderPanel" class="builder-panel">
             <div class="builder-row">
@@ -388,7 +433,6 @@
 
         <div id="conversionHint" class="conversion-hint"></div>
         
-        <!-- 卡片清單區域，使用事件委派 -->
         <div id="resultList"></div>
         
         <div id="statsArea" class="stats-card">
@@ -397,6 +441,7 @@
         </div>
     </div>
 
+    <!-- 底部操作區 -->
     <div class="footer-action" id="copyArea">
         <div class="action-row">
             <div class="select-wrapper">
@@ -416,7 +461,6 @@
 </div>
 
 <script>
-    // 移除 Color 設定，完全交由 CSS class 管理
     const stars = {
         "天醫": { levels: { "1級": ["13","31"], "2級": ["68","86"], "3級": ["49","94"], "4級": ["27","72"] }, type: "吉" },
         "生氣": { levels: { "1級": ["14","41"], "2級": ["67","76"], "3級": ["39","93"], "4級": ["28","82"] }, type: "吉" },
@@ -434,7 +478,6 @@
         'S':1, 'T':2, 'U':3, 'V':4, 'W':5, 'X':6, 'Y':7, 'Z':8
     };
 
-    // DOM 元素快取
     const input = document.getElementById('numInput');
     const clearBtn = document.getElementById('clearBtn');
     const list = document.getElementById('resultList');
@@ -444,7 +487,6 @@
     const conversionHint = document.getElementById('conversionHint');
     const modeSelect = document.getElementById('modeSelect');
     
-    // 狀態變數
     let currentMode = 'ai'; 
     let currentCopyTexts = { ai: '', client: '', numbers: '' };
     let builderActive = false;
@@ -453,11 +495,9 @@
     let saveHistoryTimeout = null;
     let searchHistory = JSON.parse(localStorage.getItem('magnetic_history') || '[]');
 
-    /* === 2. 安全綁定與事件委派 (Event Delegation) 初始化 === */
     document.addEventListener('DOMContentLoaded', () => {
         renderHistory();
 
-        // 綁定靜態 UI 事件
         document.getElementById('btn-open-history').addEventListener('click', toggleHistory);
         document.getElementById('btn-close-history').addEventListener('click', toggleHistory);
         document.getElementById('btn-clear-history').addEventListener('click', clearAllHistory);
@@ -466,7 +506,6 @@
         document.getElementById('btn-copy').addEventListener('click', copyResult);
         clearBtn.addEventListener('click', clearInput);
 
-        // 輸入框與選項事件
         input.addEventListener('input', () => {
             clearBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
             updateAnalysis();
@@ -480,7 +519,6 @@
             formattedDisplay.innerText = currentCopyTexts[currentMode] || '';
         });
 
-        // 委派事件：歷史紀錄列表 (處理點擊項目與刪除按鈕)
         document.getElementById('historyList').addEventListener('click', (e) => {
             const delBtn = e.target.closest('.history-del-btn');
             if (delBtn) {
@@ -494,7 +532,6 @@
             }
         });
 
-        // 委派事件：智慧選號膠囊 (Pills)
         document.getElementById('starPills').addEventListener('click', (e) => {
             const pill = e.target.closest('.pill');
             if (pill && pill.dataset.star) {
@@ -502,7 +539,6 @@
             }
         });
 
-        // 委派事件：智慧推薦按鈕
         document.getElementById('builderSuggestions').addEventListener('click', (e) => {
             const btn = e.target.closest('.suggest-btn');
             if (btn && btn.dataset.char) {
@@ -510,7 +546,6 @@
             }
         });
 
-        // 委派事件：分析結果卡片點擊展開
         list.addEventListener('click', (e) => {
             const item = e.target.closest('.result-item');
             if (item) {
@@ -519,7 +554,6 @@
         });
     });
 
-    // 輔助防護函數：跳脫 HTML 字元，防止 XSS
     function escapeHTML(str) {
         return str.replace(/[&<>'"]/g, 
             tag => ({
@@ -551,7 +585,6 @@
         if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(10);
     }
 
-    /* === 歷史紀錄控制 === */
     function toggleHistory() {
         triggerHaptic();
         document.getElementById('historyPanel').classList.toggle('show');
@@ -565,7 +598,11 @@
         searchHistory.unshift(cleanVal);
         if (searchHistory.length > 50) searchHistory.pop();
         
-        localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
+        try {
+            localStorage.setItem('magnetic_history', JSON.stringify(searchHistory));
+        } catch(e) {
+            console.warn('LocalStorage error', e);
+        }
         renderHistory();
     }
 
@@ -596,7 +633,6 @@
             listDiv.innerHTML = '<div class="empty-history">暫無紀錄</div>';
             return;
         }
-        // 使用 data-val 傳遞數據給委派事件，並確保 XSS 安全
         listDiv.innerHTML = searchHistory.map(item => {
             const safeItem = escapeHTML(item);
             return `
@@ -608,7 +644,6 @@
         }).join('');
     }
 
-    /* === 智慧配號控制 === */
     function toggleBuilder() {
         triggerHaptic();
         builderActive = !builderActive;
@@ -638,13 +673,11 @@
         updateAnalysis();
     }
 
-    /* 1. 解耦：完全透過 CSS class 控制顏色與狀態 */
     function renderPills() {
         const container = document.getElementById('starPills');
         container.innerHTML = Object.keys(stars).map(s => {
             const isActive = activeStars.includes(s);
             const classNames = isActive ? `pill star-bg-${s}` : `pill inactive`;
-            // 使用 data-star 供委派事件讀取
             return `<div class="${classNames}" data-star="${s}">${s}</div>`;
         }).join('');
     }
@@ -658,7 +691,6 @@
         input.focus();
     }
 
-    /* === 核心運算 === */
     function updateAnalysis() {
         let rawStr = input.value.toUpperCase();
         let cleanedRaw = rawStr.replace(/[^A-Z0-9]/g, ''); 
@@ -755,7 +787,6 @@
         updateAnalysis();
     }
 
-    /* 1. & 2. 解耦 CSS 且套用 data-char 供委派使用 */
     function renderSuggestions(convertedVal) {
         const sugBox = document.getElementById('builderSuggestions');
         if (!builderActive || convertedVal.length === 0) {
@@ -824,12 +855,10 @@
         return parts.length > 0 ? parts.join(' ') : "";
     }
 
-    /* 1. 樣式解耦: 邊框與文字顏色交給 CSS */
     function renderList(pairs) {
         list.innerHTML = pairs.map(p => {
             const star = getStarDetail(p); 
             const modifierUI = getSmartModifierUI(p);
-            // 根據取得的星名決定 CSS class
             const borderClass = star ? `star-border-${star.name}` : '';
             const colorClass = star ? `star-color-${star.name}` : 'text-tertiary';
 
